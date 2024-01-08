@@ -5,14 +5,12 @@ from dash.exceptions import PreventUpdate
 from scraper import get_app_id_name_from_appstore_url, retrieve_appstore_reviews, formate_appstore_reviews, \
     get_app_id_from_playstore_url, retrieve_playstore_reviews, format_playstore_reviews
 
-
 app = Dash(__name__,
            external_stylesheets=[
                dbc.icons.BOOTSTRAP,
                dbc.themes.BOOTSTRAP,
            ])
 app.title = "Revscrap"
-server = app.server
 
 app.layout = html.Div([
     html.H1("REVIEW SCRAPER", style={"text-align": "center", 'margin-top': '1%'}),
