@@ -11,6 +11,8 @@ app = Dash(__name__,
                dbc.icons.BOOTSTRAP,
                dbc.themes.BOOTSTRAP,
            ])
+app.title = "Revscrap"
+server = app.server
 
 app.layout = html.Div([
     html.H1("REVIEW SCRAPER", style={"text-align": "center", 'margin-top': '1%'}),
