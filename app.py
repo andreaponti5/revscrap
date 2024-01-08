@@ -5,14 +5,16 @@ from dash.exceptions import PreventUpdate
 from scraper import get_app_id_name_from_appstore_url, retrieve_appstore_reviews, formate_appstore_reviews, \
     get_app_id_from_playstore_url, retrieve_playstore_reviews, format_playstore_reviews
 
-app = Dash(__name__,
-           external_stylesheets=[
-               dbc.icons.BOOTSTRAP,
-               dbc.themes.BOOTSTRAP,
-           ])
-app.title = "Revscrap"
+dash_app = Dash(__name__,
+                external_stylesheets=[
+                    dbc.icons.BOOTSTRAP,
+                    dbc.themes.BOOTSTRAP,
+                ])
+dash_app.title = "Revscrap"
+app = dash_app.server
+server = dash_app.server
 
-app.layout = html.Div([
+dash_app.layout = html.Div([
     html.H1("REVIEW SCRAPER", style={"text-align": "center", 'margin-top': '1%'}),
     dbc.Col([
         dbc.Row([
@@ -36,7 +38,7 @@ app.layout = html.Div([
 ])
 
 
-@app.callback(
+@dash_app.callback(
     Output('download-data', 'data'),
     [Input('search-button', 'n_clicks'),
      Input('input-url', 'n_submit')],
@@ -65,4 +67,4 @@ def start_review_scraping(n_clicks, n_submits, url):
 
 
 if __name__ == '__main__':
-    app.run_server(debug=False)
+    dash_app.run_server(debug=False)
