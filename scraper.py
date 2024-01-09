@@ -1,8 +1,10 @@
+import csv
 import sys
 from datetime import datetime
+from io import StringIO
 from typing import Tuple
 
-import pandas as pd
+import numpy as np
 from app_store_scraper import AppStore
 from google_play_scraper import Sort, reviews, reviews_all
 
@@ -119,7 +121,7 @@ def retrieve_playstore_reviews(
 
 def formate_appstore_reviews(
         revs: list[dict]
-) -> pd.DataFrame:
+) -> np.array:
     """
     Format the reviews obtained calling `retrieve_appstore_reviews` in a pandas dataframe.
 
@@ -152,7 +154,7 @@ def formate_appstore_reviews(
 
 def format_playstore_reviews(
         revs: list[dict]
-) -> pd.DataFrame:
+) -> np.array:
     """
     Format the reviews obtained calling `retrieve_playstore_reviews` in a pandas dataframe.
 
@@ -177,6 +179,19 @@ def format_playstore_reviews(
     return _format_generic(revs, dataset_cols, revs_cols)
 
 
+def numpy_to_str(
+        dataset: np.array
+) -> str:
+    text_stream = StringIO()
+    # Use the csv.writer to handle the CSV writing with proper quoting and escaping
+    csv_writer = csv.writer(text_stream, delimiter=',', quotechar='"', quoting=csv.QUOTE_MINIMAL)
+    for row in dataset:
+        csv_writer.writerow(row)
+    result_string = text_stream.getvalue()
+    text_stream.close()
+    return result_string
+
+
 def _format_generic(revs, dataset_cols, revs_cols):
     dataset = {key: [] for key in dataset_cols}
     for rev in revs:
@@ -184,4 +199,9 @@ def _format_generic(revs, dataset_cols, revs_cols):
             # Remove all new line in string attributes to avoid problem when importing the csv in Excel
             dataset[dataset_key].append(rev[rev_key].replace("\n", "") if isinstance(rev[rev_key], str)
                                         else rev[rev_key])
-    return pd.DataFrame(dataset)
+    # Datetime to string
+    dataset["Datetime"] = ["" if value is None or isinstance(value, str) else value.strftime("%d/%m/%Y")
+                           for value in dataset["Datetime"]]
+    dataset["Reply Datetime"] = ["" if value is None or isinstance(value, str) else value.strftime("%d/%m/%Y")
+                                 for value in dataset["Reply Datetime"]]
+    return np.concatenate([np.array([list(dataset.keys())]), np.array(list(dataset.values())).T])

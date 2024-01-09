@@ -3,7 +3,7 @@ from dash import Dash, html, Input, Output, State, dcc
 from dash.exceptions import PreventUpdate
 
 from scraper import get_app_id_name_from_appstore_url, retrieve_appstore_reviews, formate_appstore_reviews, \
-    get_app_id_from_playstore_url, retrieve_playstore_reviews, format_playstore_reviews
+    get_app_id_from_playstore_url, retrieve_playstore_reviews, format_playstore_reviews, numpy_to_str
 
 dash_app = Dash(__name__,
                 external_stylesheets=[
@@ -52,16 +52,14 @@ def start_review_scraping(n_clicks, n_submits, url):
         app_id, app_name = get_app_id_name_from_appstore_url(url)
         appstore_reviews = retrieve_appstore_reviews(app_name=app_name, app_id=app_id)
         appstore_dataset = formate_appstore_reviews(appstore_reviews)
-        return dcc.send_data_frame(appstore_dataset.to_csv,
-                                   filename=f"appstore_{app_name}_reviews.csv",
-                                   index=False)
+        return dcc.send_string(numpy_to_str(appstore_dataset),
+                               filename=f"appstore_{app_name}_reviews.csv")
     elif "play.google.com" in url:
         app_id = get_app_id_from_playstore_url(url)
         playstore_reviews = retrieve_playstore_reviews(app_id=app_id)
         playstore_dataset = format_playstore_reviews(playstore_reviews)
-        return dcc.send_data_frame(playstore_dataset.to_csv,
-                                   filename=f"playstore_{app_id.replace('.', '_')}_reviews.csv",
-                                   index=False)
+        return dcc.send_string(numpy_to_str(playstore_dataset),
+                               filename=f"playstore_{app_id.replace('.', '_')}_reviews.csv")
     else:
         raise ValueError("Invalid url. Make sure to use a Playstore or Appstore url.")
 
