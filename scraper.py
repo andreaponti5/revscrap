@@ -68,7 +68,7 @@ def retrieve_playstore_reviews(
         app_id: str,
         lang: str = 'it',
         country: str = "it",
-        how_many: int = None,
+        how_many: int = 100000,
 ) -> list[dict]:
     """
     Retrieve a list of reviews for a given app from the Google Play Store.
@@ -93,30 +93,23 @@ def retrieve_playstore_reviews(
             - 'repliedAt': datetime of the response.
             - 'appVersion': the current version of the app.
     """
-    if how_many is None:
-        # Retrieve all the reviews
-        result = reviews_all(
+    # Retrieve max 200 reviews per request to avoid problems.
+    # 200 is the maximum number of reviews displayed in a page
+    result, continuation_token = [], None
+    while len(result) < how_many:
+        new_result, continuation_token = reviews(
             app_id=app_id,
+            continuation_token=continuation_token,
             lang=lang,
             country=country,
             sort=Sort.NEWEST,
+            filter_score_with=None,
+            count=150
         )
-    else:
-        # Retrieve max 200 reviews per request to avoid problems.
-        # 200 is the maximum number of reviews displayed in a page
-        result, continuation_token = [], None
-        count_per_round = 200
-        for i in range(how_many // count_per_round + 1):
-            round_res, continuation_token = reviews(
-                app_id=app_id,
-                lang=lang,
-                country=country,
-                sort=Sort.NEWEST,
-                count=count_per_round,
-                continuation_token=continuation_token
-            )
-            result.extend(round_res)
-    return result[:how_many]
+        if not new_result:
+            break
+        result.extend(new_result)
+    return result
 
 
 def formate_appstore_reviews(
